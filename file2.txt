@@ -1,0 +1,17 @@
+program testeproc1;
+
+Var X, y, z :integer;
+
+ Procedure P;
+ Var a :integer;
+ Begin Readln(a);
+ If a=x
+ then z != z+x
+ Else
+ begin Z:=z-x; Call p;
+ End;
+ Begin Z:=0;
+ Readln(x,y);
+ If x >= y then Call p Else Z:=z+x+y;
+ Writeln(z);
+$
