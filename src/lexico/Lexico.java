@@ -36,7 +36,8 @@ public class Lexico {
         reserve(new ConstantesTerminais("AND", Codigo.AND.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("OR", Codigo.OR.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("BEGIN", Codigo.BEGIN.value, PALAVRA_RESERVADA));
-        reserve(new ConstantesTerminais("INTEGER", Codigo.INTEIRO.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("INTEGER", Codigo.INTEGER.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("INTEIRO", Codigo.INTEIRO.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("LIT", Codigo.LIT.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("IF", Codigo.IF.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("THEN", Codigo.THEN.value, PALAVRA_RESERVADA));
@@ -46,6 +47,14 @@ public class Lexico {
         reserve(new ConstantesTerminais("WHILE", Codigo.WHILE.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("READLN", Codigo.READLN.value, PALAVRA_RESERVADA));
         reserve(new ConstantesTerminais("WRITELN", Codigo.WRITELN.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("CASE", Codigo.CASE.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("CONST", Codigo.CONST.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("FOR", Codigo.FOR.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("NOT", Codigo.NOT.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("OF", Codigo.OF.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("REPEAT", Codigo.REPEAT.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("TO", Codigo.TO.value, PALAVRA_RESERVADA));
+        reserve(new ConstantesTerminais("UNTIL", Codigo.UNTIL.value, PALAVRA_RESERVADA));
     }
 
     private void readch() throws IOException {
@@ -63,15 +72,12 @@ public class Lexico {
         StringBuilder texto = new StringBuilder();
         System.out.println("|---Código---|---------Token---------|------------Descrição------------|");
 
-        int linhaAtual = 1;
         do {
             Token tok = scan();
-            System.out.println("Código: " + tok.tag + "\t\t\tToken:" + tok.toString() + (tok.descricao != null ? "\t\t\t\tDescrição: " + tok.descricao : ""));
 
-            if (linhaAtual != line) {
-                texto.append("\n");
-                linhaAtual = line;
-            }
+            System.out.println("Código: " + tok.tag + "\t\t\tToken:" + tok.toString() + (tok.descricao != null ? "\t\t\t\tDescrição: " + tok.descricao : ""));
+            if(tok.tag == Codigo.CARACTERE_INVALIDO.value)
+                System.exit(1);
 
             texto.append(tok.tag + " ");
 
@@ -80,7 +86,7 @@ public class Lexico {
         } while (true);
 
         FileWriter fr = new FileWriter(new File(Util.RESULTADO_COMPILADOR_LEXICO));
-        fr.write(texto.toString() + "\n");
+        fr.write(texto.toString());
         fr.close();
     }
 
@@ -121,6 +127,11 @@ public class Lexico {
                 case '!':
                     if (readch('='))
                         return ConstantesTerminais.DIFERENTE;
+                    else
+                        return erroLexico();
+                case '&':
+                    if (readch('&'))
+                        return ConstantesTerminais.AND;
                     else
                         return erroLexico();
                 case '=':
@@ -167,6 +178,9 @@ public class Lexico {
                     int done = 0;
                     while (done == 0) {
                         readch();
+                        if (ch != '*') {
+                            return ConstantesTerminais.ASTERISCO;
+                        }
                         if (ch == '*') {
                             done = 1;
                         }
