@@ -28,10 +28,12 @@ public class Pilha {
         return this.pilha[this.posicaoPilha];
     }
 
-    public Integer desempilhar() {
-        if (pilhaVazia())
-            return null;
 
+    public Object desempilhar() {
+        //pop
+        if (pilhaVazia()) {
+            return null;
+        }
         return this.pilha[this.posicaoPilha--];
     }
 
