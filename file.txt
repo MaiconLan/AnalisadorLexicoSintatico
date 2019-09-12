@@ -1,0 +1,13 @@
+﻿program
+ int a, b, c;
+ string print
+ do
+ *Comentario*
+ if ((a>0))
+ 	write("caracter")
+ else
+ 	read(a);
+ while true
+ 	write(b)
+ end
+$
