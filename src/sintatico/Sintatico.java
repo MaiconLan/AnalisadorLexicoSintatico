@@ -1,6 +1,5 @@
 package sintatico;
 
-import util.Mensagem;
 import util.Pilha;
 
 import java.io.BufferedReader;
@@ -13,7 +12,6 @@ public class Sintatico {
     private FileReader file = null;
     private BufferedReader reader;
     private String line;
-    private int linhaErro = 1;
 
     public Sintatico(String fileName) throws FileNotFoundException {
         try {
@@ -29,59 +27,72 @@ public class Sintatico {
         line = reader.readLine();
     }
 
-    public void scanAll() throws IOException {
+    public void scanAll() throws IOException, AnalisadorSintaticoException {
         Pilha simbolos = novaPilha();
         Pilha entrada = new Pilha();
 
+        readLine();
+        String[] arrayEntrada = line.split(" ");
+        for (int i = arrayEntrada.length - 1; i >= 0; i--) {
+            entrada.empilhar(Integer.valueOf(arrayEntrada[i]));
+        }
+
         do {
-            readLine();
-            String[] teste = line.split(" ");
-            for (int i = teste.length - 1; i >= 0; i--) {
-                entrada.empilhar(Integer.valueOf(teste[i]));
+            int simboloTopoPilha = simbolos.exibeUltimoValor();
+
+            while (simboloTopoPilha == Constants.EPSILON) {
+                simbolos.desempilhar();
+                simboloTopoPilha = simbolos.exibeUltimoValor();
             }
 
-            do {
-                int simboloTopoPilha = simbolos.exibeUltimoValor();
+            if (isTerminal(simboloTopoPilha) || simbolos.pilhaVazia()) {
+                if (simboloTopoPilha == entrada.exibeUltimoValor()) {
+                    System.out.println("Desempilhando: " + simbolos.desempilhar() + "-" + entrada.desempilhar() + "\n");
 
-                while (simboloTopoPilha == Constants.EPSILON) {
-                    simbolos.desempilhar();
-                    simboloTopoPilha = simbolos.exibeUltimoValor();
+                } else {
+                    lancarErro(simboloTopoPilha, entrada.exibeUltimoValor());
                 }
 
-                if (isTerminal(simboloTopoPilha) || simbolos.pilhaVazia()) {
-                    if (simboloTopoPilha == entrada.exibeUltimoValor()) {
-                        System.out.println("Desempilhando: \n" + simbolos.desempilhar() + "\n" + entrada.desempilhar() + "\n\n");
+            } else if (isNaoTerminal(simboloTopoPilha)) {
+                if (estaNaMatrizParse(simboloTopoPilha, entrada.exibeUltimoValor())) {
+                    simbolos.desempilhar();
+                    int idMatrizParse = obterMatrizParse(simboloTopoPilha, entrada.exibeUltimoValor());
 
-                    } else {
-                        Mensagem.mensagem("Ocorreu um erro na linha: " + linhaErro);
-                        System.exit(0);
-                    }
+                    int[] regrasProducao = obterRegrasProducao(idMatrizParse);
 
-                } else if (isNaoTerminal(simboloTopoPilha)) {
-                    if (estaNaMatrizParse(simboloTopoPilha, entrada.exibeUltimoValor())) {
-                        simbolos.desempilhar();
-                        int idMatrizParse = obterMatrizParse(simboloTopoPilha, entrada.exibeUltimoValor());
-
-                        int[] regrasProducao = obterRegrasProducao(idMatrizParse);
-
-                        for (int i = regrasProducao.length - 1; i >= 0; i--) {
-                            simbolos.empilhar(regrasProducao[i]);
-                        }
-                        //simbolos.desempilhar();
-
-                    } else {
-                        Mensagem.mensagem("Erro novamente na linha: " + linhaErro);
-                        System.exit(0);
+                    for (int i = regrasProducao.length - 1; i >= 0; i--) {
+                        simbolos.empilhar(regrasProducao[i]);
                     }
 
                 } else {
-                    Mensagem.mensagem("Não implementado: " + linhaErro);
-                    System.exit(0);
+                    for (int i = 0; i < simbolos.tamanho(); i++) {
+                        System.out.println(simbolos.pilha[i]);
+                    }
+                    lancarErro(simboloTopoPilha, entrada.exibeUltimoValor());
                 }
 
-            } while (!simbolos.pilhaVazia());
-            linhaErro++;
-        } while (line != null);
+            } else {
+                lancarErro(simboloTopoPilha, entrada.exibeUltimoValor());
+
+            }
+
+        } while (!simbolos.pilhaVazia());
+
+        System.err.println("\nSimbolos");
+        for (Integer integer : simbolos.pilha) {
+            if (integer != null)
+                System.err.println(integer + " ");
+        }
+
+        System.err.println("\nEntrada");
+        for (Integer integer : entrada.pilha) {
+            if (integer != null)
+                System.err.println(integer + " ");
+        }
+    }
+
+    private void lancarErro(int simboloEsperado, int simboloRecebido) throws AnalisadorSintaticoException {
+        throw new AnalisadorSintaticoException(ParserConstants.PARSER_ERROR[simboloEsperado] + ", era esperado " + simboloEsperado + " porém foi recebido  " + simboloRecebido);
     }
 
     private int[] obterRegrasProducao(int idMatrizParse) {
@@ -105,7 +116,7 @@ public class Sintatico {
     }
 
     private boolean isTerminal(int token) {
-        return token < Constants.FIRST_NON_TERMINAL && token > Constants.DOLLAR;
+        return token > Constants.DOLLAR && token < Constants.FIRST_NON_TERMINAL;
     }
 
     private boolean isNaoTerminal(int token) {
