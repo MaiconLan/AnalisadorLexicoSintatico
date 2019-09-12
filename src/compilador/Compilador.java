@@ -1,6 +1,7 @@
 package compilador;
 
 import lexico.Lexico;
+import sintatico.AnalisadorSintaticoException;
 import sintatico.Sintatico;
 import util.Util;
 
@@ -18,7 +19,12 @@ public class Compilador {
         lex.scanAll();
 
         Sintatico sintatico = new Sintatico(Util.RESULTADO_COMPILADOR_LEXICO);
-        sintatico.scanAll();
+        try {
+            sintatico.scanAll();
+
+        } catch (AnalisadorSintaticoException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 }
